@@ -27,6 +27,9 @@ def index():
     if 'user_id' not in session:
         return redirect('/login')
     user = db.get_user(session["user_id"])
+    if user is None:
+        # something weird - user got deleted? make them login again
+        return redirect('/logout')
     all_chats = db.get_all_chats()
     my_chats = db.get_user_chats(user.id)
     return render_template('index.html', user=user, all_chats=all_chats, my_chats=my_chats)
@@ -50,11 +53,21 @@ def login():
     '''
 
 
+@app.route('/chats', methods=['POST'])
+def create_chat():
+    chat_id = request.form.get('chatid')
+    if chat_id is not None:
+        db.join_chat(session['user_id'], chat_id)
+    else:
+        # we're creating a new chat
+        name = request.form['chatname']
+        db.create_chat(name)
+    return redirect('/')
+
+
 @app.route('/logout')
 def logout():
-    # remove the username from the session if it's there
-    session.pop('username', None)
-    session.pop('userphone', None)
+    session.pop('user_id', None)
     return redirect('/')
 
 

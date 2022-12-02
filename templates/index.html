@@ -13,12 +13,25 @@
 
     <h2>Available chats</h2>
     {% for chat in all_chats %}
-    {{ chat }}
+    <p>
+        <form method="post" action="/chats">
+            {{ chat }}
+            <input type=hidden name=chatid value={{ chat.id }}>
+            <input type=submit value="join">
+        </form>
+    </p>
     {% endfor %}
+
+    <form method="post" action="/chats">
+        <input type=text name=chatname placeholder="new chat group">
+        <input type=submit value="Create new chat">
+    </form>
 
     <h2>Joined chats</h2>
     {% for chat in my_chats %}
-    {{ chat }}
+    <p>
+        {{ chat }}
+    </p>
     {% endfor %}
 </body>
 </html>

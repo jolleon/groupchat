@@ -10,6 +10,8 @@ TWILIO_PHONES = [
 ]
 
 User = namedtuple('User', ['id', 'phone', 'name'])
+Chat = namedtuple('Chat', ['id', 'name'])
+JoinedChat = namedtuple('JoinedChat', ['membership_id', 'chat_id', 'name', 'twilio_phone'])
 
 
 def login_or_create_user(username, userphone):
@@ -32,29 +34,43 @@ def create_user(username, userphone):
 def get_user(user_id):
     u = cur.execute("select * from users where id = ?", (user_id,)).fetchone()
     print(u)
+    if u is None:
+        return None
     return User._make(u)
 
 
 def get_all_chats():
-    return cur.execute("select * from chats").fetchall()
+    return map(Chat._make, cur.execute("select * from chats").fetchall())
 
 
 def get_user_chats(user_id):
-    return cur.execute("""
-        select * from chats
-        join memberships on memberships.chat_id = chats.id
-        where memberships.user_id = ?
-    """, (user_id,)).fetchall()
+    return map(JoinedChat._make,
+        cur.execute("""
+            select memberships.id, chats.id, chats.name, memberships.twilio_phone from chats
+            join memberships on memberships.chat_id = chats.id
+            where memberships.user_id = ?
+        """, (user_id,)).fetchall()
+    )
+
+
+def create_chat(name):
+    cur.execute("insert into chats (name) values (?)", (name,))
+    con.commit()
+    return cur.lastrowid
 
 
 def join_chat(user_id, chat_id):
-    already_used_numbers = cur.execute("select twilio_phone from memberships where user_id = ?", (user_id,)).fetchall()
-    print(already_used_numbers)
+    print(f"user {user_id} is joining chat {chat_id}")
+    used_numbers = cur.execute("select twilio_phone from memberships where user_id = ?", (user_id,)).fetchall()
+    used_numbers = [n[0] for n in used_numbers]
+    print('already used numbers:')
+    print(used_numbers)
     twilio_number = None
     for number in TWILIO_PHONES:
-        if number not in already_used_numbers:
+        if number not in used_numbers:
             twilio_number = number
 
+    print(twilio_number)
     if twilio_number is None:
         print("already using all phone numbers!")
         raise Exception("no free twilio number")
