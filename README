@@ -1,4 +1,8 @@
+## Setup
 
+Prepare db: `python db.py`
+
+Launch it: `python app.py`
 
 
 ## TODO
