@@ -8,7 +8,17 @@
 <body>
     <h1>Hello World!</h1>
     <h2>Welcome to FlaskApp!</h2>
-    {{ username }} - {{ userphone }}
+    {{ user.id }} {{ user.name }} - {{ user.phone }}
     <a href="/logout">logout</a>
+
+    <h2>Available chats</h2>
+    {% for chat in all_chats %}
+    {{ chat }}
+    {% endfor %}
+
+    <h2>Joined chats</h2>
+    {% for chat in my_chats %}
+    {{ chat }}
+    {% endfor %}
 </body>
 </html>

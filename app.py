@@ -1,6 +1,10 @@
 from flask import Flask, request, redirect, render_template, session
 from twilio.twiml.messaging_response import MessagingResponse
 
+
+import db
+
+
 app = Flask(__name__)
 
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'  # TODO env or generate
@@ -20,17 +24,22 @@ def sms_reply():
 
 @app.route("/")
 def index():
-    if 'username' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
-    return render_template('index.html', username=session["username"], userphone=session['userphone'])
+    user = db.get_user(session["user_id"])
+    all_chats = db.get_all_chats()
+    my_chats = db.get_user_chats(user.id)
+    return render_template('index.html', user=user, all_chats=all_chats, my_chats=my_chats)
 
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        session['username'] = request.form['username']
-        session['userphone'] = request.form['userphone']
+        name = request.form['username']
+        phone = request.form['userphone']
+        user = db.login_or_create_user(name, phone)
+        session['user_id'] = user.id
         return redirect('/')
     return '''
         <form method="post">

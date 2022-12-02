@@ -25,3 +25,7 @@ pnpm-debug.log*
 
 # python
 __pycache__
+
+
+# project specific
+groupchat.db
