@@ -1,6 +1,8 @@
 import sqlite3
 from collections import namedtuple
 
+import twilio_api
+
 
 con = sqlite3.connect("groupchat.db", check_same_thread=False)
 cur = con.cursor()
@@ -14,7 +16,7 @@ TWILIO_PHONES = [
 
 User = namedtuple('User', ['id', 'phone', 'name'])
 Chat = namedtuple('Chat', ['id', 'name'])
-JoinedChat = namedtuple('JoinedChat', ['membership_id', 'chat_id', 'name', 'twilio_phone'])
+JoinedChat = namedtuple('JoinedChat', ['membership_id', 'chat_id', 'group_name', 'twilio_phone'])
 
 
 def login_or_create_user(username, userphone):
@@ -62,8 +64,10 @@ def create_chat(name):
     return cur.lastrowid
 
 
-def join_chat(user_id, chat_id):
-    print(f"user {user_id} wants to join chat {chat_id}")
+def join_chat(user, chat_id):
+    print(f"user {user} wants to join chat {chat_id}")
+
+    user_id = user.id
 
     # don't join a chat twice
     already_joined = cur.execute("select twilio_phone from memberships where user_id = ? and chat_id = ?", (user_id, chat_id)).fetchone()
@@ -88,6 +92,10 @@ def join_chat(user_id, chat_id):
 
     cur.execute("insert into memberships (user_id, chat_id, twilio_phone) values (?, ?, ?)", (user_id, chat_id, twilio_number))
     con.commit()
+
+    group_name = cur.execute("select name from chats where id = ?", (chat_id,)).fetchone()[0]
+    twilio_api.send_welcome_message(user.phone, twilio_number, group_name)
+
 
 
 def leave_chat(membership_id):

@@ -3,6 +3,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 
 
 import db
+import twilio_api
 
 
 app = Flask(__name__)
@@ -58,7 +59,8 @@ def create_chat():
     chat_id = request.form.get('chatid')
     membership_id = request.form.get('membershipid')
     if chat_id is not None:
-        db.join_chat(session['user_id'], chat_id)
+        user = db.get_user(session['user_id'])
+        db.join_chat(user, chat_id)
     elif membership_id is not None:
         db.leave_chat(membership_id)
     else:

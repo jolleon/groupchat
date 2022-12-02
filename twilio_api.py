@@ -9,11 +9,12 @@ auth_token = os.environ['TWILIO_AUTH_TOKEN']
 client = Client(account_sid, auth_token)
 
 
-message = client.messages \
+def send_welcome_message(to, from_, group_name):
+    message = client.messages \
                 .create(
-                     body="Join Earth's mightiest heroes. Like Kevin Bacon.",
-                     from_='+19802944153',
-                     to='+14086884239'
+                     body=f"Welcome to {group_name}! You can post to the group by responding to this number.",
+                     from_=from_,
+                     to=to
                  )
+    print(message.sid)
 
-print(message.sid)
