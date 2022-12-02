@@ -5,8 +5,11 @@ from collections import namedtuple
 con = sqlite3.connect("groupchat.db", check_same_thread=False)
 cur = con.cursor()
 
+# TODO if we're regularly adding or modifying the numbers,
+# would be easier to put them in the db as well
 TWILIO_PHONES = [
     '+19802944153',
+    '+17208079029'
 ]
 
 User = namedtuple('User', ['id', 'phone', 'name'])
@@ -60,7 +63,15 @@ def create_chat(name):
 
 
 def join_chat(user_id, chat_id):
-    print(f"user {user_id} is joining chat {chat_id}")
+    print(f"user {user_id} wants to join chat {chat_id}")
+
+    # don't join a chat twice
+    already_joined = cur.execute("select twilio_phone from memberships where user_id = ? and chat_id = ?", (user_id, chat_id)).fetchone()
+    if already_joined is not None:
+        print("already joined this chat")
+        return
+
+    # find free twilio number
     used_numbers = cur.execute("select twilio_phone from memberships where user_id = ?", (user_id,)).fetchall()
     used_numbers = [n[0] for n in used_numbers]
     print('already used numbers:')
