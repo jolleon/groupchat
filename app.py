@@ -56,8 +56,11 @@ def login():
 @app.route('/chats', methods=['POST'])
 def create_chat():
     chat_id = request.form.get('chatid')
+    membership_id = request.form.get('membershipid')
     if chat_id is not None:
         db.join_chat(session['user_id'], chat_id)
+    elif membership_id is not None:
+        db.leave_chat(membership_id)
     else:
         # we're creating a new chat
         name = request.form['chatname']

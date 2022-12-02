@@ -79,6 +79,11 @@ def join_chat(user_id, chat_id):
     con.commit()
 
 
+def leave_chat(membership_id):
+    cur.execute("delete from memberships where id = ?", membership_id)
+    con.commit()
+
+
 def setup():
     cur.execute("""
     CREATE TABLE users (

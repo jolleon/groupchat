@@ -30,7 +30,11 @@
     <h2>Joined chats</h2>
     {% for chat in my_chats %}
     <p>
-        {{ chat }}
+        <form method="post" action="/chats">
+            {{ chat }}
+            <input type=hidden name=membershipid value={{ chat.membership_id }}>
+            <input type=submit value="leave">
+        </form>
     </p>
     {% endfor %}
 </body>
