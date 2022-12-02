@@ -97,10 +97,31 @@ def join_chat(user, chat_id):
     twilio_api.send_welcome_message(user.phone, twilio_number, group_name)
 
 
-
 def leave_chat(membership_id):
     cur.execute("delete from memberships where id = ?", membership_id)
     con.commit()
+
+
+def process_message(from_number, to_number, message):
+    chat_id, sender_name = cur.execute("""
+        select memberships.chat_id, users.name from memberships
+        join users on users.id = memberships.user_id
+        where users.phone = ? and memberships.twilio_phone = ?
+    """, (from_number, to_number)).fetchone()
+    print(f"message from user {sender_name} to group {chat_id}")
+
+    to_users = cur.execute("""
+        select memberships.twilio_phone, users.phone from memberships
+        join users on users.id = memberships.user_id
+        where memberships.chat_id = ?
+    """, (chat_id,)).fetchall()
+
+    print(to_users)
+
+    for twilio_number, user_number in to_users:
+        print(f"sending sms to {user_number} from {twilio_number}")
+        twilio_api.send_message(user_number, twilio_number, f"{sender_name}: {message}")
+
 
 
 def setup():

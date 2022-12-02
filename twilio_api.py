@@ -18,3 +18,12 @@ def send_welcome_message(to, from_, group_name):
                  )
     print(message.sid)
 
+
+def send_message(to, from_, body):
+    message = client.messages \
+                .create(
+                     body=body,
+                     from_=from_,
+                     to=to
+                 )
+    print(message.sid)
